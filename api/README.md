@@ -29,7 +29,7 @@ CHW-API is a full-stack platform designed to support Community Health Workers wi
 - **Course management** and training materials
 - **Push notifications** and offline support
 
-This is a **monorepo** containing both backend (Node.js) and mobile (React Native) applications.
+This is the **backend API** for the eBumenyi platform. The mobile app lives in [`../mobile`](../mobile) and the web app in [`../web`](../web).
 
 ## 🛠 Tech Stack
 
@@ -53,39 +53,25 @@ This is a **monorepo** containing both backend (Node.js) and mobile (React Nativ
 ## 📂 Project Structure
 
 ```
-chw-api/
-├── src/                          # Backend source code
-│   ├── index.ts                 # Entry point
-│   ├── config/                  # Configuration files
-│   ├── controllers/             # Request handlers
-│   ├── services/               # Business logic
-│   ├── middlewares/            # Express middleware
-│   ├── events/                 # Socket.io event handlers
-│   ├── types/                  # TypeScript types
-│   ├── utils/                  # Utility functions
-│   └── verifications/          # Verification logic
-├── mobile/                       # React Native mobile app
-│   ├── app/                    # Expo Router screens
-│   │   ├── (tabs)/            # Tabbed navigation
-│   │   ├── chat/              # Chat screens
-│   │   ├── group/             # Group screens
-│   │   ├── community/         # Community screens
-│   │   ├── meeting/           # Meeting screens
-│   │   └── auth/              # Authentication screens
-│   ├── components/            # Reusable components
-│   ├── contexts/              # React contexts (Theme, Language, Messaging)
-│   ├── hooks/                 # Custom React hooks
-│   ├── services/              # API and Socket services
-│   ├── types/                 # TypeScript interfaces
-│   └── utils/                 # Utility functions
-├── prisma/                      # Database schema and migrations
-│   ├── schema.prisma          # Prisma schema
-│   └── migrations/            # Database migrations
-├── docker-compose.yaml         # Docker Compose configuration
-├── Dockerfile                  # Production Docker image
-├── Dockerfile.dev             # Development Docker image
-└── package.json               # Dependencies
-
+eBumenyi-dev-work/
+├── api/
+│   ├── src/                    # Backend source code
+│   │   ├── index.ts           # Entry point
+│   │   ├── config/            # Configuration files
+│   │   ├── controllers/       # Request handlers
+│   │   ├── services/          # Business logic
+│   │   ├── middlewares/       # Express middleware
+│   │   ├── events/            # Socket.io event handlers
+│   │   ├── types/             # TypeScript types
+│   │   ├── utils/             # Utility functions
+│   │   └── verifications/     # Verification logic
+│   ├── prisma/                # Database schema and migrations
+│   ├── Dockerfile             # Production Docker image
+│   ├── Dockerfile.dev         # Development Docker image
+│   └── package.json           # Dependencies
+├── mobile/                    # React Native mobile app
+├── web/                       # React web app
+└── meet/                      # Video conferencing app
 ```
 
 ## 🚀 Getting Started
@@ -102,8 +88,8 @@ Before you begin, ensure you have:
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/gilberthappi/chw-api.git
-cd chw-api
+git clone https://github.com/housemajorrwanda/eBumenyi-dev-work.git
+cd eBumenyi-dev-work/api
 ```
 
 ## 💾 Installation
@@ -174,7 +160,7 @@ AWS_SECRET_ACCESS_KEY=your_secret
 
 ### Mobile Environment Variables
 
-Create a `.env.local` in the `mobile/` directory:
+Create a `.env.local` in the [`../mobile`](../mobile) directory:
 
 ```env
 # API
@@ -209,7 +195,7 @@ The API will be available at `http://localhost:3000`
 ### Mobile Development
 
 ```bash
-cd mobile
+cd ../mobile
 
 # Start Expo development server
 npm run start
@@ -480,7 +466,7 @@ taskkill /PID <PID> /F
 ## 📞 Support
 
 For issues and questions:
-1. Check existing GitHub issues
+1. Check existing [GitHub issues](https://github.com/housemajorrwanda/eBumenyi-dev-work/issues)
 2. Create a new issue with detailed information
 3. Contact the development team
 

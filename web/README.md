@@ -189,8 +189,8 @@ Clone this repository to your desired folder:
 
 ```sh
 cd my-folder
-git clone git@github.com:WelTel-Rwanda/weltel-rwanda-chw-etraining.git
-cd weltel-rwanda-chw-etraining
+git clone https://github.com/housemajorrwanda/eBumenyi-dev-work.git
+cd eBumenyi-dev-work/web
 ```
 
 ### Install
@@ -198,15 +198,11 @@ cd weltel-rwanda-chw-etraining
 Install this project with:
 
 ```sh
-# Install backend dependencies
-cd backend
+# Install web dependencies
 pnpm install
 
-# Install Python dependencies for AI services
-pip install -r requirements.txt
-
-# Install frontend dependencies
-cd ../frontend
+# Install API dependencies
+cd ../api
 pnpm install
 
 # Install mobile app dependencies
@@ -219,16 +215,16 @@ npm install
 To run the project, execute the following command:
 
 ```sh
-# Start the backend server
-cd backend
+# Start the API server
+cd ../api
 pnpm run dev
 
-# Start the frontend development server
-cd frontend
+# Start the web development server
+cd ../web
 pnpm run dev
 
 # Start the mobile app (requires Expo CLI)
-cd mobile
+cd ../mobile
 npx expo start
 ```
 
@@ -237,17 +233,13 @@ npx expo start
 To run tests, run the following command:
 
 ```sh
-# Run backend tests
-cd backend
+# Run API tests
+cd ../api
 npm test
 
-# Run frontend tests
-cd frontend
+# Run web tests
+cd ../web
 npm test
-
-# Run AI model tests
-cd ai-services
-python -m pytest tests/
 ```
 
 ### Deployment
@@ -281,14 +273,14 @@ This project is a collaboration between multiple organizations:
 
 👤 **WelTel Rwanda**
 - Website: [WelTel](https://weltel.org/)
-- GitHub: [@WelTel-Rwanda](https://github.com/WelTel-Rwanda)
+
+👤 **House Major Rwanda**
+- GitHub: [eBumenyi-dev-work](https://github.com/housemajorrwanda/eBumenyi-dev-work)
 
 👤 **Gilbert Dushimimana (Developer)**
-- GitHub: [@gilberthappi](https://github.com/gilberthappi)
+- GitHub: [eBumenyi-dev-work](https://github.com/housemajorrwanda/eBumenyi-dev-work)
 - Twitter: [@dushimimanagil3](https://twitter.com/dushimimanagil3)
 - LinkedIn: [Gilbert Dushimimana](https://www.linkedin.com/in/dushimimana-gilbert-happi/)
-
-![Gilbert's GitHub stats](https://github-readme-stats.vercel.app/api?username=gilberthappi&count_private=true&theme=dark&show_icons=true)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -311,7 +303,7 @@ This project is a collaboration between multiple organizations:
 
 Contributions, issues, and feature requests are welcome!
 
-Feel free to check the [issues page](https://github.com/WelTel-Rwanda/weltel-rwanda-chw-etraining/issues/1).
+Feel free to check the [issues page](https://github.com/housemajorrwanda/eBumenyi-dev-work/issues).
 
 ### How to Contribute
 
