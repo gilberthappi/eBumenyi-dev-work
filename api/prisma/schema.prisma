@@ -1,0 +1,1155 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextIndex"]
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id                 String         @id @default(uuid())
+  email              String?         @unique
+  password           String
+  fullNames          String
+  phoneNumber        String         @unique
+  district           String
+  sector             String
+  cell               String
+  village            String
+  NID                String?
+  gender             String?
+  birthdate          DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  otp                String?
+  otpExpiresAt       DateTime? 
+  photo              String         @default("https://img.freepik.com/premium-vector/user-profile-icon-flat-style-member-avatar-vector-illustration-isolated-background-human-permission-sign-business-concept_157943-15752.jpg")
+  video              String?
+  audio              String?
+  bio                String?
+  industry           Industry?
+  weltelUserId       Int?           @unique
+  hospitalId         String?
+  hospital           Hospital?   @relation(fields: [hospitalId], references: [id], onDelete: Cascade)
+  student            Student?
+  staff              Staff?
+  notification       Notification[]
+  userRoles          UserRole[]
+  faqOnSlides        FAQOnSlide[]
+  feedbacks        FeedbackOnSlide[]
+  systemReview       SystemReview[]
+  calendarEventsCreated     CalendarEvent[]            @relation("CalendarEventCreated")
+  calendarEventParticipants CalendarEventParticipant[]
+  notificationPushTokens NotificationPushToken[]
+  messageUnreadCounter   MessageUnreadCounter?
+  announcementsCreated   Announcement[] @relation("AnnouncementCreated")
+  
+  // Direct Chat Relations
+  directChatsAsUser1      DirectChat[] @relation("DirectChatUser1")
+  directChatsAsUser2      DirectChat[] @relation("DirectChatUser2")
+  directMessagesSent      DirectMessage[] @relation("DirectMessageSender")
+  directMessageReads      DirectMessageRead[] @relation("DirectMessageReads")
+  directMessageLikes      DirectMessageLike[] @relation("DirectMessageLikes")
+  
+  // Group Chat Relations
+  groupChatsCreated       GroupChat[] @relation("GroupChatCreator")
+  groupChatParticipant    GroupChatParticipant[] @relation("GroupChatParticipants")
+  groupMessagesSent       GroupMessage[] @relation("GroupMessageSender")
+  groupMessageReads       GroupMessageRead[] @relation("GroupMessageReads")
+  groupMessageLikes       GroupMessageLike[] @relation("GroupMessageLikes")
+  groupComments           GroupComment[] @relation("GroupComments")
+  
+  // Community Relations
+  communitiesCreated      Community[] @relation("CommunityCreator")
+  communityMemberships    CommunityMember[] @relation("CommunityMembers")
+  communityPosts          CommunityPost[] @relation("CommunityPostAuthor")
+  communityPostLikes      CommunityPostLike[] @relation("CommunityPostLikes")
+  communityPostComments   CommunityPostComment[] @relation("CommunityPostComments")
+  savedPosts              SavedCommunityPost[]
+  meetingRecordings       MeetingRecording[]
+  recordingInvites        MeetingRecordingInvite[]
+  settings                UserSettings?
+}
+
+model UserSettings {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  theme        String   @default("light")
+  language     String   @default("en")
+  timezone     String   @default("Africa/Kigali")
+  dateFormat   String   @default("DD/MM/YYYY")
+  emailNotif   Boolean  @default(true)
+  pushNotif    Boolean  @default(true)
+  smsNotif     Boolean  @default(false)
+  categories   Json     @default("{\"courseUpdates\":true,\"assignmentReminders\":true,\"certificates\":true,\"systemUpdates\":false}")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Hospital {
+  id                    String   @id @default(uuid())
+  name                  String
+  province              String?
+  district              String?
+  sector                String?
+  cell                  String?
+  village               String?
+  contact               String?
+  email                 String?
+  chwSupervisor         String?
+  chwSupervisorContact  String?
+  totalChws             Int?     @default(0)
+  activeChws            Int?     @default(0)
+  catchmentArea      String[]   @default([])
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  users                 User[]
+}
+
+enum Industry {
+  WELTEL
+  RBC
+  SFH
+  CIIC_HIN
+}
+
+enum RecordingAudience {
+  ALL
+  TRAINEES
+  INVITED
+}
+
+enum RoleType {
+  ADMIN
+  TRAINER
+  CHO
+  TRAINEE
+  DEVELOPER
+  TESTER
+  STAFF
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  GRADUATED
+}
+
+model UserRole {
+  id          String  @id @default(uuid())
+  userId      String
+  name        RoleType
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType @default(info)
+  isRead    Boolean          @default(false)
+  actionUrl String?          @db.VarChar(500)
+  entityType String? @db.VarChar(50)
+  entityId   String?
+  metadata   Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdAtMinute DateTime? @map("createdAtMinute") // Used for deduplication across multiple scheduler instances
+
+  // Deduplication: Prevents duplicate notifications across multiple scheduler instances
+  // Unique constraint ensures only one notification per user/entity/type within same minute
+  @@unique([userId, type, entityType, entityId, createdAtMinute])
+}
+
+model NotificationPushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @db.VarChar(500)
+  platform  String   @default("web") // ios | android | web | desktop
+  deviceId  String?  @db.VarChar(200)
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, token])
+}
+
+model MessageUnreadCounter {
+  userId      String   @id
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalUnread Int      @default(0)
+  updatedAt   DateTime @updatedAt
+}
+
+model Announcement {
+  id          String   @id @default(uuid())
+  title       String
+  body        String
+  segment     String   // role name or 'all'
+  priority    String   @default("medium")
+  status      String   @default("draft")
+  publishAt   DateTime @default(now())
+  validUntil  DateTime?
+  createdById String
+  createdBy   User     @relation("AnnouncementCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum CalendarEventType {
+  TRAINING
+  REMINDER
+  DEADLINE
+  CUSTOM
+  WEBINAR
+  MEETING
+  SCREENING
+  DRILL
+}
+
+enum CalendarFrequency {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum MeetingType {
+  EBUMENYI_MEETING
+  GOOGLE_MEET
+  ZOOM
+  OTHER
+}
+
+enum EventPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model CalendarEvent {
+  id                    String                     @id @default(uuid())
+  title                 String
+  description           String?
+  type                  CalendarEventType          @default(TRAINING)
+  frequency             CalendarFrequency          @default(NONE)
+  daysOfWeek            Int[]                      @default([])
+  timezone              String                     @default("Africa/Kigali")
+  startAt               DateTime
+  endAt                 DateTime?
+  allDay                Boolean                    @default(false)
+  reminderMinutesBefore Int[]                      @default([30])
+  recurrenceEndsAt      DateTime?
+  createdById           String
+  createdBy             User                       @relation("CalendarEventCreated", fields: [createdById], references: [id])
+  meetingType           MeetingType?               @default(EBUMENYI_MEETING)
+  location              String?
+  streamRoomId          String?                    // Stream call id when different from event id (legacy web schedule)
+  priority              EventPriority              @default(MEDIUM)
+  hostEmail             String?
+  isRepeating           Boolean                    @default(false)  // true = this is a generated occurrence from a repeating event
+  commonId              String?                    // same for all occurrences of same series, helps group them for bulk updates
+  isCancelled           Boolean                    @default(false)  // true = this occurrence is cancelled
+  
+  attachments           CalendarEventAttachment[]
+  participants          CalendarEventParticipant[]
+  externalParticipants  CalendarEventExternalParticipant[]
+  recordings            MeetingRecording[]
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+  
+  @@index([commonId])
+  @@index([isRepeating])
+  @@index([isCancelled])
+  @@index([startAt, reminderMinutesBefore])
+}
+
+model CalendarEventParticipant {
+  id        String                   @id @default(uuid())
+  eventId   String
+  userId    String
+  event     CalendarEvent            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
+  @@unique([eventId, userId])
+}
+
+model CalendarEventExternalParticipant {
+  id        String                   @id @default(uuid())
+  eventId   String
+  email     String
+  name      String?
+  event     CalendarEvent            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
+  @@unique([eventId, email])
+}
+
+model CalendarEventAttachment {
+  id        String   @id @default(uuid())
+  eventId   String
+  name      String
+  url       String
+  event     CalendarEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+
+enum NotificationType {
+  info
+  success
+  warning
+  error
+  new_message
+  like
+  comment
+  reply
+  mention
+  system
+}
+
+
+model Course {
+  id               String      @id @default(uuid())
+  creatorId        String       
+  title            String 
+  coverIcon        String
+  description      String?
+  rating           Float        @default(0.0)
+  isPublished      Boolean      @default(true)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  staff            Staff        @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  sections         Section[]
+  intro            CourseIntro?
+  progresses       CourseProgress[]
+  preTests         PreTest[]
+  finalTest        FinalTest[]
+  finalExam        FinalExam[]
+  questionnaires   Questionnaire[]
+  courseReview     CourseReview[]
+  documents        DocumentOnSlide[]
+  certificates     Certificate[]
+}
+
+model Section {
+  id               String      @id @default(uuid())
+  courseId         String
+  title            String
+  description      String?
+  totalChapter     Int         @default(0)
+  sectionNumber    Int         @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  course           Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapters         Chapter[]
+  sectionReview    SectionReview[]
+}
+
+model Chapter {
+  id               String      @id @default(uuid())
+  sectionId        String
+  title            String
+  description      String?
+  totalSlide       Int         @default(0)
+  chapterNumber    Int
+  activityAt       Int?
+  lessonDuration   Int         @default(5)
+  isPublished      Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  section          Section     @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  slides           Slide[]
+  midTest          MidTest?
+  chapterProgresses ChapterProgress[]
+  chapterReview    ChapterReview[]
+}
+
+model Slide {
+  id               String      @id @default(uuid())
+  chapterId        String
+  note             String?
+  description      String?
+  slideNumber      Int
+  file             String?      
+  isPublished      Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  chapter          Chapter     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  faqs             FAQOnSlide[]
+  feedbacks        FeedbackOnSlide[]
+  studentSlides    StudentOnSlide[]
+  slideProgress    SlideProgress[]
+}
+
+model CourseIntro {
+  id               String      @id @default(uuid())
+  courseId         String     @unique
+  title            String
+  summary          String
+  bannerImage      String?
+  thumbnail        String
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  course           Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model PreTest   {
+  id               String      @id @default(uuid())
+  courseId         String?
+  isPublished      Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  questionToBeAnswered  Int    @default(1)
+  marksToPass      Int    @default(0)
+  description      String?
+  course           Course?      @relation(fields: [courseId], references: [id])
+  attempts         AttempTest[]
+}
+
+model  MidTest {
+  id               String      @id @default(uuid())
+  chapterId        String     @unique
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  questionToBeAnswered  Int    @default(1)
+  marksToPass      Int    @default(0)
+  description      String?
+  chapter          Chapter     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  questionnaires   Questionnaire[]
+  attempts         AttempTest[]
+}
+
+model FinalTest {
+  id               String      @id @default(uuid())
+  courseId         String?    
+  isPublished      Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  questionToBeAnswered  Int    @default(1)
+  marksToPass      Int    @default(0)
+  description      String?
+  course           Course?      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  attempts         AttempTest[]
+}
+
+
+model FinalExam {
+  id               String      @id @default(uuid())
+  courseId         String?    
+  isPublished      Boolean     @default(true)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  questionToBeAnswered  Int    @default(1)
+  marksToPass      Int    @default(0)
+  description      String?
+  course           Course?      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  attempts         AttempTest[]
+}
+
+
+model Questionnaire {
+  id                 String      @id @default(uuid())
+  question           String
+  questionImage      String?
+  feedbackStatement  String?
+  allowMultiple      Boolean     @default(false)
+  courseId           String?
+  midTestId          String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  course           Course?      @relation(fields: [courseId], references: [id])
+  midTest           MidTest?    @relation(fields: [midTestId], references: [id], onDelete: Cascade)
+  attemptAnswers    AttemptAnswer[]
+  options           Option[]
+  answers           Answer[]
+}
+
+model AttemptAnswer {
+  id                 String      @id @default(uuid())
+  attemptId          String
+  questionnaireId    String
+  selectedAnswerIds  String[]
+  isCorrect          Boolean     @default(false)
+  marks              Float       @default(0.0)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  attempt            AttempTest  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionnaire      Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+}
+
+model Option {
+  id                 String      @id @default(uuid())
+  label             String
+  image             String?
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  questionnaireId   String
+  questionnaire     Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+}
+
+model Answer {
+  id                 String      @id @default(uuid())
+  label             String
+  image             String?
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  questionnaireId   String
+  questionnaire     Questionnaire @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+}
+
+
+model AttempTest {
+  id                 String      @id @default(uuid())
+  studentId             String
+  preTestId             String?
+  midTestId             String?
+  finalTestId             String?
+  finalExamId             String?
+  tryCount            Int       @default(1)
+  marks               Float     @default(0.0)
+  isCompleted            Boolean   @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  student           Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  preTest           PreTest?    @relation(fields: [preTestId], references: [id], onDelete: Cascade)
+  midTest           MidTest?    @relation(fields: [midTestId], references: [id], onDelete: Cascade)
+  finalTest         FinalTest?  @relation(fields: [finalTestId], references: [id], onDelete: Cascade)
+  finalExam         FinalExam?  @relation(fields: [finalExamId], references: [id], onDelete: Cascade)
+  attemptAnswers    AttemptAnswer[]
+}
+
+model CourseProgress {
+  id                 String      @id @default(uuid())
+  studentId             String
+  courseId             String
+  progress            Float     @default(0.0)
+  isCompleted          Boolean  @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  student           Student     @relation(fields: [studentId], references: [id])
+  course            Course      @relation(fields: [courseId], references: [id])
+}
+
+model ChapterProgress {
+  id                 String      @id @default(uuid())
+  studentId             String
+  chapterId             String
+  progress            Float     @default(0.0)
+  isCompleted          Boolean  @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  student           Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  chapter           Chapter     @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+}
+
+model SlideProgress {
+  id                 String      @id @default(uuid())
+  studentId             String
+  slideId             String
+  isCompleted          Boolean  @default(false)
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  student           Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  slide            Slide      @relation(fields: [slideId], references: [id], onDelete: Cascade)
+}
+
+model DocumentOnSlide {
+  id                 String      @id @default(uuid())
+  fileName             String
+  file                 String
+  courseId             String
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  course           Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+model FAQOnSlide {
+  id                 String      @id @default(uuid())
+  userId          String
+  slideId             String
+  message            String    
+  isPublished        Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  user           User     @relation(fields: [userId], references: [id])
+  slide             Slide       @relation(fields: [slideId], references: [id])
+}
+
+model FeedbackOnSlide {
+  id                 String      @id @default(uuid())
+  userId          String
+  slideId             String
+  message            String    
+  isPublished        Boolean     @default(true)
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  user           User     @relation(fields: [userId], references: [id])
+  slide             Slide       @relation(fields: [slideId], references: [id])
+}
+
+model StudentOnSlide {
+  id                 String      @id @default(uuid())
+  studentId             String
+  slideId             String
+  progress            Float     @default(0.0)
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  student           Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  slide             Slide       @relation(fields: [slideId], references: [id], onDelete: Cascade)
+}
+
+model Student {
+  id                 String      @id @default(uuid())
+  userId             String      @unique
+  role               RoleType    @default(TRAINEE)
+  status             StudentStatus @default(ACTIVE)
+  user               User        @relation(fields: [userId], references: [id])
+  attempts           AttempTest[]
+  courseProgresses   CourseProgress[]
+  chapterProgresses  ChapterProgress[]
+  studentOnSlides    StudentOnSlide[]
+  slideProgress      SlideProgress[]
+  courseReview       CourseReview[]
+  sectionReview      SectionReview[]
+  chapterReview      ChapterReview[]
+  certificates       Certificate[]
+  ledGroup           CHOGroup?            @relation("CHOLeader")
+  groupMembership    CHOGroupMember?      @relation("CHWGroupMembership")
+  receivedInvitations CHOGroupInvitation[] @relation("CHWInvitations")
+}
+
+model CHOGroup {
+  id          String   @id @default(uuid())
+  name        String
+  choId       String   @unique
+  sector      String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  cho         Student  @relation("CHOLeader", fields: [choId], references: [id], onDelete: Cascade)
+  members     CHOGroupMember[]
+  invitations CHOGroupInvitation[]
+}
+
+model CHOGroupMember {
+  id        String   @id @default(uuid())
+  groupId   String
+  studentId String   @unique
+  joinedAt  DateTime @default(now())
+  group     CHOGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student   Student  @relation("CHWGroupMembership", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+}
+
+model CHOGroupInvitation {
+  id          String           @id @default(uuid())
+  groupId     String
+  studentId   String
+  status      InvitationStatus @default(PENDING)
+  invitedAt   DateTime         @default(now())
+  respondedAt DateTime?
+  group       CHOGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  student     Student  @relation("CHWInvitations", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, studentId])
+  @@index([studentId])
+}
+
+model Certificate {
+  id                 String      @id @default(uuid())
+  studentId          String
+  courseId           String
+  pdf                String
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  student            Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course             Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  @@unique([studentId, courseId])
+}
+
+model Staff {
+  id                 String      @id @default(uuid())
+  userId             String      @unique
+  role               RoleType    @default(STAFF)
+  user               User        @relation(fields: [userId], references: [id])
+  courses            Course[]
+}
+
+model CourseReview {
+  id                 String      @id @default(uuid())
+  studentId             String
+  courseId             String
+  comment              String
+  rating               Float
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  student           Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course            Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  categoryRatings   CourseCategoryRating[]
+}
+
+model SectionReview {
+  id                 String      @id @default(uuid())
+  studentId             String
+  sectionId             String
+  comment              String
+  rating               Float
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  student           Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  section            Section      @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  categoryRatings   SectionCategoryRating[]
+}
+
+model ChapterReview {
+  id                 String      @id @default(uuid())
+  studentId             String
+  chapterId             String
+  comment              String
+  rating               Float
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  student           Student     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  chapter            Chapter      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  categoryRatings   ChapterCategoryRating[]
+}
+
+model SystemReview {
+  id                 String      @id @default(uuid())
+  userId              String
+  feedback            String    
+  overallRating       Float   
+  recommendation      String    
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryRatings CategoryRating[]
+}
+
+model CategoryRating {
+  id                 String      @id @default(uuid())
+  systemReviewId     String
+  category           String
+  categoryId           String
+  label              String
+  rating             Int
+  createdAt         DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  systemReview       SystemReview @relation(fields: [systemReviewId], references: [id], onDelete: Cascade)
+}
+
+model CourseCategoryRating {
+  id                 String      @id @default(uuid())
+  courseReviewId     String
+  category           String
+  categoryId         String
+  label              String
+  rating             Int
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  courseReview       CourseReview @relation(fields: [courseReviewId], references: [id], onDelete: Cascade)
+}
+
+model SectionCategoryRating {
+  id                 String      @id @default(uuid())
+  sectionReviewId    String
+  category           String
+  categoryId         String
+  label              String
+  rating             Int
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  sectionReview      SectionReview @relation(fields: [sectionReviewId], references: [id], onDelete: Cascade)
+}
+
+model ChapterCategoryRating {
+  id                 String      @id @default(uuid())
+  chapterReviewId    String
+  category           String
+  categoryId         String
+  label              String
+  rating             Int
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  chapterReview      ChapterReview @relation(fields: [chapterReviewId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// DIRECT CHAT (1-1 Messaging) - FIXED
+// ============================================
+model DirectChat {
+  id              String   @id @default(uuid())
+  userId1         String
+  userId2         String
+  lastMessageId   String?  @unique  // Track latest message for preview, must be unique for 1-to-1
+  isArchived      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  user1           User     @relation("DirectChatUser1", fields: [userId1], references: [id], onDelete: Cascade)
+  user2           User     @relation("DirectChatUser2", fields: [userId2], references: [id], onDelete: Cascade)
+  lastMessage     DirectMessage? @relation("DirectChatLastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
+  messages        DirectMessage[] @relation("DirectChatMessages")
+  
+  @@unique([userId1, userId2])
+  @@index([userId1])
+  @@index([userId2])
+  @@index([updatedAt(sort: Desc)])
+  @@map("direct_chats")
+}
+
+model DirectMessage {
+  id            String   @id @default(uuid())
+  chatId        String
+  senderId      String
+  content       String
+  type          String   @default("text")
+  attachments   String?
+  isDeleted     Boolean  @default(false)
+  editedAt      DateTime?
+  readCount     Int      @default(0)
+  likeCount     Int      @default(0)
+  timestamp     DateTime @default(now())
+  
+  // Relations
+  chat          DirectChat @relation("DirectChatMessages", fields: [chatId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sender        User     @relation("DirectMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  reads         DirectMessageRead[]
+  likes         DirectMessageLike[]
+  lastMessageOf DirectChat? @relation("DirectChatLastMessage")
+  
+  @@index([chatId, timestamp(sort: Desc)])
+  @@index([senderId])
+  @@map("direct_messages")
+}
+
+model DirectMessageRead {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+  
+  message   DirectMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User    @relation("DirectMessageReads", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([messageId, userId])
+  @@map("direct_message_reads")
+}
+
+model DirectMessageLike {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  likedAt   DateTime @default(now())
+  
+  message   DirectMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User    @relation("DirectMessageLikes", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([messageId, userId])
+  @@map("direct_message_likes")
+}
+
+// ============================================
+// GROUP CHAT (Multiple Participants) - FIXED
+// ============================================
+model GroupChat {
+  id              String   @id @default(uuid())
+  name            String
+  photo           String?  @default("https://res.cloudinary.com/dleiqpvue/image/upload/v1759124054/rbc-removebg-preview_k8xhjr.png")
+  description     String?
+  lastMessageId   String?  @unique  // Track latest message for preview, must be unique for 1-to-1
+  createdById     String
+  isArchived      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  creator         User     @relation("GroupChatCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  lastMessage     GroupMessage? @relation("GroupChatLastMessage", fields: [lastMessageId], references: [id], onDelete: SetNull)
+  participants    GroupChatParticipant[]
+  messages        GroupMessage[] @relation("GroupChatMessages")
+  
+  @@index([createdById])
+  @@index([updatedAt(sort: Desc)])
+  @@map("group_chats")
+}
+
+model GroupChatParticipant {
+  id        String   @id @default(uuid())
+  groupId   String
+  userId    String
+  role      String   @default("member")
+  joinedAt  DateTime @default(now())
+  
+  group     GroupChat @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user      User     @relation("GroupChatParticipants", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupId, userId])
+  @@index([userId])
+  @@map("group_chat_participants")
+}
+
+model GroupMessage {
+  id            String   @id @default(uuid())
+  groupId       String
+  senderId      String
+  content       String
+  type          String   @default("text")
+  attachments   String?
+  isDeleted     Boolean  @default(false)
+  editedAt      DateTime?
+  readCount     Int      @default(0)
+  likeCount     Int      @default(0)
+  commentCount  Int      @default(0)
+  timestamp     DateTime @default(now())
+  
+  // Relations
+  group         GroupChat @relation("GroupChatMessages", fields: [groupId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  sender        User     @relation("GroupMessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  reads         GroupMessageRead[]
+  likes         GroupMessageLike[]
+  comments      GroupComment[]
+  lastMessageOf GroupChat? @relation("GroupChatLastMessage")
+  
+  @@index([groupId, timestamp(sort: Desc)])
+  @@index([senderId])
+  @@map("group_messages")
+}
+
+model GroupMessageRead {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+  
+  message   GroupMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User    @relation("GroupMessageReads", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([messageId, userId])
+  @@map("group_message_reads")
+}
+
+model GroupMessageLike {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  likedAt   DateTime @default(now())
+  
+  message   GroupMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User    @relation("GroupMessageLikes", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([messageId, userId])
+  @@map("group_message_likes")
+}
+
+model GroupComment {
+  id        String   @id @default(uuid())
+  messageId String
+  userId    String
+  text      String
+  parentId  String?
+  timestamp DateTime @default(now())
+  
+  message   GroupMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  user      User     @relation("GroupComments", fields: [userId], references: [id], onDelete: Cascade)
+  // Use Restrict instead of NoAction for PostgreSQL
+  parent    GroupComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies   GroupComment[] @relation("CommentReplies")
+  
+  @@index([messageId, timestamp])
+  @@index([parentId])
+  @@map("group_comments")
+}
+
+// ============================================
+// COMMUNITY (Blog-Style Discussions) - FIXED
+// ============================================
+model Community {
+  id            String   @id @default(uuid())
+  name          String
+  description   String?
+  photo         String?  @default("https://res.cloudinary.com/dleiqpvue/image/upload/v1759124054/rbc-removebg-preview_k8xhjr.png")
+  lastPostId    String?  @unique  // Track latest post for preview, must be unique for 1-to-1
+  createdById   String
+  isPublic      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  creator       User     @relation("CommunityCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  lastPost      CommunityPost? @relation("CommunityLastPost", fields: [lastPostId], references: [id], onDelete: SetNull)
+  members       CommunityMember[]
+  posts         CommunityPost[] @relation("CommunityPosts")
+  
+  @@index([createdById])
+  @@index([isPublic])
+  @@index([updatedAt(sort: Desc)])
+  @@map("communities")
+}
+
+model CommunityMember {
+  id            String    @id @default(uuid())
+  communityId   String
+  userId        String
+  role          String    @default("member")
+  joinedAt      DateTime  @default(now())
+  lastVisitedAt DateTime? // Track when user last visited community for unread calculation
+  
+  community   Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  user        User     @relation("CommunityMembers", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([communityId, userId])
+  @@index([userId])
+  @@map("community_members")
+}
+
+model CommunityPost {
+  id            String   @id @default(uuid())
+  communityId   String
+  authorId      String
+  title         String
+  content       String
+  photo         String?
+  attachments   String?
+  isDeleted     Boolean  @default(false)
+  editedAt      DateTime?
+  viewCount       Int      @default(0)
+  likeCount       Int      @default(0)
+  commentCount    Int      @default(0)
+  saveCount       Int      @default(0)
+  reshareCount    Int      @default(0)
+  resharedFromId  String?
+  timestamp       DateTime @default(now())
+
+  // Relations
+  community     Community @relation("CommunityPosts", fields: [communityId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  author        User     @relation("CommunityPostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  likes         CommunityPostLike[]
+  comments      CommunityPostComment[]
+  lastPostOf    Community? @relation("CommunityLastPost")
+  savedBy       SavedCommunityPost[]
+  resharedFrom  CommunityPost?  @relation("PostReshares", fields: [resharedFromId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  reshares      CommunityPost[] @relation("PostReshares")
+
+  @@index([communityId, timestamp(sort: Desc)])
+  @@index([authorId])
+  @@map("community_posts")
+}
+
+model CommunityPostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  likedAt   DateTime @default(now())
+  
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User    @relation("CommunityPostLikes", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, userId])
+  @@map("community_post_likes")
+}
+
+model CommunityPostComment {
+  id        String   @id @default(uuid())
+  postId    String
+  userId    String
+  text      String
+  parentId  String?
+  timestamp DateTime @default(now())
+  
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation("CommunityPostComments", fields: [userId], references: [id], onDelete: Cascade)
+  // Use Restrict instead of NoAction for PostgreSQL
+  parent    CommunityPostComment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  replies   CommunityPostComment[] @relation("CommentReplies")
+  
+  @@index([postId, timestamp])
+  @@index([parentId])
+  @@map("community_post_comments")
+}
+
+model SavedCommunityPost {
+  id      String        @id @default(uuid())
+  userId  String
+  postId  String
+  savedAt DateTime      @default(now())
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post    CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@map("saved_community_posts")
+}
+
+model FiredReminder {
+  id              Int      @id @default(autoincrement())
+  eventId         String   @map("event_id")
+  userId          String   @map("user_id")
+  fireAt          DateTime @map("fire_at")
+  minutesBefore   Int      @map("minutes_before")
+  firedAt         DateTime @default(now()) @map("fired_at")
+  
+  @@unique([eventId, userId, fireAt, minutesBefore])
+  @@index([fireAt])
+  @@map("fired_reminders")
+}
+
+model MeetingRecording {
+  id          String            @id @default(uuid())
+  eventId     String?
+  userId      String
+  url         String
+  title       String?
+  isPublished Boolean           @default(false)
+  publishedTo RecordingAudience @default(ALL)
+  publishedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  event   CalendarEvent?         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invites MeetingRecordingInvite[]
+
+  @@index([eventId])
+  @@index([userId])
+  @@index([isPublished])
+  @@map("meeting_recordings")
+}
+
+model MeetingRecordingInvite {
+  id          String   @id @default(uuid())
+  recordingId String
+  userId      String
+  createdAt   DateTime @default(now())
+
+  recording MeetingRecording @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([recordingId, userId])
+  @@index([recordingId])
+  @@index([userId])
+  @@map("meeting_recording_invites")
+}
+

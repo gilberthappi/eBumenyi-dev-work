@@ -1,0 +1,597 @@
+diff --git a/node_modules/expo-alarm-module/android/.classpath b/node_modules/expo-alarm-module/android/.classpath
+new file mode 100644
+index 0000000..05a8c9c
+--- /dev/null
++++ b/node_modules/expo-alarm-module/android/.classpath
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<classpath>
++	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-20/"/>
++	<classpathentry kind="con" path="org.eclipse.buildship.core.gradleclasspathcontainer"/>
++	<classpathentry kind="output" path="bin/default"/>
++</classpath>
+diff --git a/node_modules/expo-alarm-module/android/.gradle/8.9/checksums/checksums.lock b/node_modules/expo-alarm-module/android/.gradle/8.9/checksums/checksums.lock
+new file mode 100644
+index 0000000..e632be3
+Binary files /dev/null and b/node_modules/expo-alarm-module/android/.gradle/8.9/checksums/checksums.lock differ
+diff --git a/node_modules/expo-alarm-module/android/.gradle/8.9/dependencies-accessors/gc.properties b/node_modules/expo-alarm-module/android/.gradle/8.9/dependencies-accessors/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/expo-alarm-module/android/.gradle/8.9/executionHistory/executionHistory.lock b/node_modules/expo-alarm-module/android/.gradle/8.9/executionHistory/executionHistory.lock
+new file mode 100644
+index 0000000..02f9942
+Binary files /dev/null and b/node_modules/expo-alarm-module/android/.gradle/8.9/executionHistory/executionHistory.lock differ
+diff --git a/node_modules/expo-alarm-module/android/.gradle/8.9/fileChanges/last-build.bin b/node_modules/expo-alarm-module/android/.gradle/8.9/fileChanges/last-build.bin
+new file mode 100644
+index 0000000..f76dd23
+Binary files /dev/null and b/node_modules/expo-alarm-module/android/.gradle/8.9/fileChanges/last-build.bin differ
+diff --git a/node_modules/expo-alarm-module/android/.gradle/8.9/fileHashes/fileHashes.lock b/node_modules/expo-alarm-module/android/.gradle/8.9/fileHashes/fileHashes.lock
+new file mode 100644
+index 0000000..0d73e8b
+Binary files /dev/null and b/node_modules/expo-alarm-module/android/.gradle/8.9/fileHashes/fileHashes.lock differ
+diff --git a/node_modules/expo-alarm-module/android/.gradle/8.9/gc.properties b/node_modules/expo-alarm-module/android/.gradle/8.9/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/expo-alarm-module/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock b/node_modules/expo-alarm-module/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock
+new file mode 100644
+index 0000000..bb841cb
+Binary files /dev/null and b/node_modules/expo-alarm-module/android/.gradle/buildOutputCleanup/buildOutputCleanup.lock differ
+diff --git a/node_modules/expo-alarm-module/android/.gradle/buildOutputCleanup/cache.properties b/node_modules/expo-alarm-module/android/.gradle/buildOutputCleanup/cache.properties
+new file mode 100644
+index 0000000..333c396
+--- /dev/null
++++ b/node_modules/expo-alarm-module/android/.gradle/buildOutputCleanup/cache.properties
+@@ -0,0 +1,2 @@
++#Thu May 14 10:37:41 SAST 2026
++gradle.version=8.9
+diff --git a/node_modules/expo-alarm-module/android/.gradle/vcs-1/gc.properties b/node_modules/expo-alarm-module/android/.gradle/vcs-1/gc.properties
+new file mode 100644
+index 0000000..e69de29
+diff --git a/node_modules/expo-alarm-module/android/.project b/node_modules/expo-alarm-module/android/.project
+new file mode 100644
+index 0000000..9e0ad7b
+--- /dev/null
++++ b/node_modules/expo-alarm-module/android/.project
+@@ -0,0 +1,34 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<projectDescription>
++	<name>expo-alarm-module</name>
++	<comment>Project expo-alarm-module created by Buildship.</comment>
++	<projects>
++	</projects>
++	<buildSpec>
++		<buildCommand>
++			<name>org.eclipse.jdt.core.javabuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++		<buildCommand>
++			<name>org.eclipse.buildship.core.gradleprojectbuilder</name>
++			<arguments>
++			</arguments>
++		</buildCommand>
++	</buildSpec>
++	<natures>
++		<nature>org.eclipse.jdt.core.javanature</nature>
++		<nature>org.eclipse.buildship.core.gradleprojectnature</nature>
++	</natures>
++	<filteredResources>
++		<filter>
++			<id>1776784164662</id>
++			<name></name>
++			<type>30</type>
++			<matcher>
++				<id>org.eclipse.core.resources.regexFilterMatcher</id>
++				<arguments>node_modules|\.git|__CREATED_BY_JAVA_LANGUAGE_SERVER__</arguments>
++			</matcher>
++		</filter>
++	</filteredResources>
++</projectDescription>
+diff --git a/node_modules/expo-alarm-module/android/.settings/org.eclipse.buildship.core.prefs b/node_modules/expo-alarm-module/android/.settings/org.eclipse.buildship.core.prefs
+new file mode 100644
+index 0000000..1675490
+--- /dev/null
++++ b/node_modules/expo-alarm-module/android/.settings/org.eclipse.buildship.core.prefs
+@@ -0,0 +1,2 @@
++connection.project.dir=../../../android
++eclipse.preferences.version=1
+diff --git a/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/AlarmService.java b/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/AlarmService.java
+index 5b928a2..2037f42 100644
+--- a/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/AlarmService.java
++++ b/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/AlarmService.java
+@@ -2,6 +2,7 @@ package com.expoalarmmodule;
+ 
+ import android.app.Notification;
+ import android.app.Service;
++import android.content.Context;
+ import android.content.Intent;
+ import android.os.IBinder;
+ import android.util.Log;
+@@ -10,25 +11,40 @@ public class AlarmService extends Service {
+ 
+     private static final String TAG = "AlarmService";
+ 
++    // Static reference so Manager / NotificationActionReceiver can stop us
++    private static AlarmService instance;
++
++    public static void stopIfRunning(Context context) {
++        if (instance != null) {
++            instance.stopForeground(true);   // remove the foreground notification
++            instance.stopSelf();             // stop the service
++            instance = null;
++            Log.d("AlarmService", "Stopped via stopIfRunning()");
++        } else {
++            // Fallback: ask the OS to stop the service
++            context.stopService(new Intent(context, AlarmService.class));
++        }
++    }
++
+     @Override
+     public IBinder onBind(final Intent intent) {
+-        Log.d(TAG, "On bind " + intent.getExtras());
+         return null;
+     }
+ 
+-    // called only the first time we start the service
+     @Override
+     public void onCreate() {
+         super.onCreate();
++        instance = this;
+         Log.d(TAG, "Creating service");
+     }
++
+     @Override
+     public void onDestroy() {
+         super.onDestroy();
++        instance = null;
+         Log.d(TAG, "Stopping service");
+     }
+ 
+-    // triggered every time we call startService() when we start our service
+     @Override
+     public int onStartCommand(final Intent intent, final int flags, final int startId) {
+         super.onStartCommand(intent, flags, startId);
+@@ -40,8 +56,7 @@ public class AlarmService extends Service {
+         Manager.start(getApplicationContext(), alarmUid);
+         startForeground(1, notification);
+ 
+-        // service will be explicitly started and stopped
+-        return START_STICKY;
++        // START_NOT_STICKY: do not restart if killed
++        return START_NOT_STICKY;
+     }
+-
+ }
+diff --git a/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/ExpoAlarmModuleModule.java b/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/ExpoAlarmModuleModule.java
+index 0aa62bb..3f22a4b 100644
+--- a/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/ExpoAlarmModuleModule.java
++++ b/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/ExpoAlarmModuleModule.java
+@@ -39,8 +39,6 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+         return NAME;
+     }
+ 
+-
+-
+   @ReactMethod
+   public void getState (Promise promise) {
+     promise.resolve(Manager.getActiveAlarm());
+@@ -48,7 +46,6 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+ 
+   @ReactMethod
+   public void set (ReadableMap details, Promise promise) {
+-
+     Alarm alarm = parseAlarmObject(details);
+     Manager.schedule(reactContext, alarm);
+     promise.resolve(null);
+@@ -87,17 +84,19 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+ 
+   @ReactMethod
+   public void stop (Promise promise) {
++    // Stop sound + mark alarm inactive
+     Manager.stop(reactContext);
+-    Intent serviceIntent = new Intent(reactContext, AlarmService.class);
+-    reactContext.stopService(serviceIntent);
++    // Properly stop the foreground service (stopService alone does not work)
++    AlarmService.stopIfRunning(reactContext);
+     promise.resolve(null);
+   }
+ 
+   @ReactMethod
+   public void snooze (Promise promise) {
++    // Stop sound + reschedule for snoozeInterval minutes later
+     Manager.snooze(reactContext);
+-    Intent serviceIntent = new Intent(reactContext, AlarmService.class);
+-    reactContext.stopService(serviceIntent);
++    // Properly stop the foreground service
++    AlarmService.stopIfRunning(reactContext);
+     promise.resolve(null);
+   }
+ 
+@@ -141,17 +140,9 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+ 
+     boolean showDismiss = alarm.hasKey("showDismiss") ? alarm.getBoolean("showDismiss") : false;
+ 
+-    /**
+-     * Snooze configurations.
+-     * If snooze is not set, it will be false by default.
+-     * SnoozeInterval is 5 minutes by default.
+-     */
+     boolean showSnooze = alarm.hasKey("showSnooze") ? alarm.getBoolean("showSnooze") : false;
+     int snoozeInterval = alarm.hasKey("snoozeInterval") ? alarm.getInt("snoozeInterval") : 5;
+ 
+-    /**
+-     * Custom texts
+-     */
+     String dismissText = alarm.hasKey("dismissText") ? alarm.getString("dismissText") : "Dismiss";
+     String snoozeText = alarm.hasKey("snoozeText") ? alarm.getString("snoozeText") : "Snooze";
+ 
+@@ -164,11 +155,10 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+           if(alarm.hasKey("day")) {
+             ZonedDateTime dateTemp = ZonedDateTime.parse(alarm.getString("day"));
+-            // Date sucessful.
+             date = dateTemp;
+           }
+         }
+-      } catch(Exception e) { // Se não conseguir obter a string, tenta obter o array
++      } catch(Exception e) {
+         System.out.println(e);
+         ReadableArray rawDays = alarm.getArray("day");
+         for (int i = 0; i < rawDays.size(); i++) {
+@@ -187,17 +177,11 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+     map.putBoolean("repeating", alarm.repeating);
+     map.putBoolean("active", alarm.active);
+     map.putBoolean("showDismiss", alarm.showDismiss);
+-
+-    // Snooze configs
+     map.putBoolean("showSnooze", alarm.showSnooze);
+     map.putInt("snoozeInterval", alarm.snoozeInterval);
+-
+-    // Custom texts
+     map.putString("dismissText", alarm.dismissText);
+     map.putString("snoozeText", alarm.snoozeText);
+ 
+-
+-
+     if( alarm.date != null) {
+       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         map.putString("day", alarm.date.toString());
+diff --git a/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/Manager.java b/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/Manager.java
+index 569d3cb..3aeca20 100644
+--- a/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/Manager.java
++++ b/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/Manager.java
+@@ -114,7 +114,8 @@ public class Manager {
+     static void start(Context context, String alarmUid) {
+         activeAlarmUid = alarmUid;
+         sound = new Sound(context);
+-        sound.play("default");
++        // Play the bundled alarm.wav from res/raw instead of the device default ringtone
++        sound.play("alarm");
+ 
+         Log.d(TAG, "Starting " + activeAlarmUid);
+     }
+diff --git a/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/receivers/NotificationActionReceiver.java b/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/receivers/NotificationActionReceiver.java
+index e826fba..8986ee6 100644
+--- a/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/receivers/NotificationActionReceiver.java
++++ b/node_modules/expo-alarm-module/android/lib/commonjs/main/java/com/expoalarmmodule/receivers/NotificationActionReceiver.java
+@@ -6,9 +6,8 @@ import android.content.Context;
+ import android.content.Intent;
+ import android.util.Log;
+ 
+-import com.expoalarmmodule.Manager;
+-import com.expoalarmmodule.Helper;
+ import com.expoalarmmodule.AlarmService;
++import com.expoalarmmodule.Manager;
+ 
+ public class NotificationActionReceiver extends BroadcastReceiver {
+ 
+@@ -35,13 +34,15 @@ public class NotificationActionReceiver extends BroadcastReceiver {
+             case "DISMISS_ACTION":
+                 Log.d(TAG, "Received DISMISS action for Alarm: " + alarmUid);
+                 Manager.stop(context);
+-                this.removeNotification(context, notificationId);
++                AlarmService.stopIfRunning(context);
++                cancelNotification(context, notificationId);
+                 break;
+ 
+             case "SNOOZE_ACTION":
+                 Log.d(TAG, "Received SNOOZE action for Alarm: " + alarmUid);
+                 Manager.snooze(context);
+-                this.removeNotification(context, notificationId);
++                AlarmService.stopIfRunning(context);
++                cancelNotification(context, notificationId);
+                 break;
+ 
+             default:
+@@ -50,12 +51,11 @@ public class NotificationActionReceiver extends BroadcastReceiver {
+         }
+     }
+ 
+-    private void removeNotification(Context context, int notificationId) {
+-        Intent serviceIntentSnooze = new Intent(context, AlarmService.class);
+-        context.stopService(serviceIntentSnooze);
++    private void cancelNotification(Context context, int notificationId) {
+         if (notificationId != -1) {
+-            ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
+-                .cancel(notificationId);
++            NotificationManager nm = (NotificationManager)
++                context.getSystemService(Context.NOTIFICATION_SERVICE);
++            nm.cancel(notificationId);
+         }
+     }
+ }
+diff --git a/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/AlarmService.java b/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/AlarmService.java
+index 5b928a2..2037f42 100644
+--- a/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/AlarmService.java
++++ b/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/AlarmService.java
+@@ -2,6 +2,7 @@ package com.expoalarmmodule;
+ 
+ import android.app.Notification;
+ import android.app.Service;
++import android.content.Context;
+ import android.content.Intent;
+ import android.os.IBinder;
+ import android.util.Log;
+@@ -10,25 +11,40 @@ public class AlarmService extends Service {
+ 
+     private static final String TAG = "AlarmService";
+ 
++    // Static reference so Manager / NotificationActionReceiver can stop us
++    private static AlarmService instance;
++
++    public static void stopIfRunning(Context context) {
++        if (instance != null) {
++            instance.stopForeground(true);   // remove the foreground notification
++            instance.stopSelf();             // stop the service
++            instance = null;
++            Log.d("AlarmService", "Stopped via stopIfRunning()");
++        } else {
++            // Fallback: ask the OS to stop the service
++            context.stopService(new Intent(context, AlarmService.class));
++        }
++    }
++
+     @Override
+     public IBinder onBind(final Intent intent) {
+-        Log.d(TAG, "On bind " + intent.getExtras());
+         return null;
+     }
+ 
+-    // called only the first time we start the service
+     @Override
+     public void onCreate() {
+         super.onCreate();
++        instance = this;
+         Log.d(TAG, "Creating service");
+     }
++
+     @Override
+     public void onDestroy() {
+         super.onDestroy();
++        instance = null;
+         Log.d(TAG, "Stopping service");
+     }
+ 
+-    // triggered every time we call startService() when we start our service
+     @Override
+     public int onStartCommand(final Intent intent, final int flags, final int startId) {
+         super.onStartCommand(intent, flags, startId);
+@@ -40,8 +56,7 @@ public class AlarmService extends Service {
+         Manager.start(getApplicationContext(), alarmUid);
+         startForeground(1, notification);
+ 
+-        // service will be explicitly started and stopped
+-        return START_STICKY;
++        // START_NOT_STICKY: do not restart if killed
++        return START_NOT_STICKY;
+     }
+-
+ }
+diff --git a/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/ExpoAlarmModuleModule.java b/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/ExpoAlarmModuleModule.java
+index 0aa62bb..3f22a4b 100644
+--- a/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/ExpoAlarmModuleModule.java
++++ b/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/ExpoAlarmModuleModule.java
+@@ -39,8 +39,6 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+         return NAME;
+     }
+ 
+-
+-
+   @ReactMethod
+   public void getState (Promise promise) {
+     promise.resolve(Manager.getActiveAlarm());
+@@ -48,7 +46,6 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+ 
+   @ReactMethod
+   public void set (ReadableMap details, Promise promise) {
+-
+     Alarm alarm = parseAlarmObject(details);
+     Manager.schedule(reactContext, alarm);
+     promise.resolve(null);
+@@ -87,17 +84,19 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+ 
+   @ReactMethod
+   public void stop (Promise promise) {
++    // Stop sound + mark alarm inactive
+     Manager.stop(reactContext);
+-    Intent serviceIntent = new Intent(reactContext, AlarmService.class);
+-    reactContext.stopService(serviceIntent);
++    // Properly stop the foreground service (stopService alone does not work)
++    AlarmService.stopIfRunning(reactContext);
+     promise.resolve(null);
+   }
+ 
+   @ReactMethod
+   public void snooze (Promise promise) {
++    // Stop sound + reschedule for snoozeInterval minutes later
+     Manager.snooze(reactContext);
+-    Intent serviceIntent = new Intent(reactContext, AlarmService.class);
+-    reactContext.stopService(serviceIntent);
++    // Properly stop the foreground service
++    AlarmService.stopIfRunning(reactContext);
+     promise.resolve(null);
+   }
+ 
+@@ -141,17 +140,9 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+ 
+     boolean showDismiss = alarm.hasKey("showDismiss") ? alarm.getBoolean("showDismiss") : false;
+ 
+-    /**
+-     * Snooze configurations.
+-     * If snooze is not set, it will be false by default.
+-     * SnoozeInterval is 5 minutes by default.
+-     */
+     boolean showSnooze = alarm.hasKey("showSnooze") ? alarm.getBoolean("showSnooze") : false;
+     int snoozeInterval = alarm.hasKey("snoozeInterval") ? alarm.getInt("snoozeInterval") : 5;
+ 
+-    /**
+-     * Custom texts
+-     */
+     String dismissText = alarm.hasKey("dismissText") ? alarm.getString("dismissText") : "Dismiss";
+     String snoozeText = alarm.hasKey("snoozeText") ? alarm.getString("snoozeText") : "Snooze";
+ 
+@@ -164,11 +155,10 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+           if(alarm.hasKey("day")) {
+             ZonedDateTime dateTemp = ZonedDateTime.parse(alarm.getString("day"));
+-            // Date sucessful.
+             date = dateTemp;
+           }
+         }
+-      } catch(Exception e) { // Se não conseguir obter a string, tenta obter o array
++      } catch(Exception e) {
+         System.out.println(e);
+         ReadableArray rawDays = alarm.getArray("day");
+         for (int i = 0; i < rawDays.size(); i++) {
+@@ -187,17 +177,11 @@ public class ExpoAlarmModuleModule extends ReactContextBaseJavaModule {
+     map.putBoolean("repeating", alarm.repeating);
+     map.putBoolean("active", alarm.active);
+     map.putBoolean("showDismiss", alarm.showDismiss);
+-
+-    // Snooze configs
+     map.putBoolean("showSnooze", alarm.showSnooze);
+     map.putInt("snoozeInterval", alarm.snoozeInterval);
+-
+-    // Custom texts
+     map.putString("dismissText", alarm.dismissText);
+     map.putString("snoozeText", alarm.snoozeText);
+ 
+-
+-
+     if( alarm.date != null) {
+       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+         map.putString("day", alarm.date.toString());
+diff --git a/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/Manager.java b/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/Manager.java
+index 569d3cb..8adce40 100644
+--- a/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/Manager.java
++++ b/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/Manager.java
+@@ -26,14 +26,34 @@ public class Manager {
+     }
+ 
+     public static void reschedule(Context context) {
++        long now = System.currentTimeMillis();
+         Alarm[] alarms = Storage.getAllAlarms(context);
+         for (Alarm alarm : alarms) {
++            // Clean up dismissed / inactive alarms — do not reschedule them
++            if (!alarm.active) {
++                Storage.removeAlarm(context, alarm.uid);
++                Storage.removeDates(context, alarm.uid);
++                Log.d(TAG, "removed inactive alarm on boot: " + alarm.uid);
++                continue;
++            }
+             Storage.removeDates(context, alarm.uid);
+             AlarmDates dates = alarm.getAlarmDates();
+             Storage.saveDates(context, dates);
++            boolean hasScheduled = false;
+             for (Date date : dates.getDates()) {
+-                Helper.scheduleAlarm(context, alarm.uid, date.getTime(), dates.getNotificationId(date));
+-                Log.d(TAG, "rescheduling alarm: " + alarm.uid);
++                if (date.getTime() > now) {
++                    Helper.scheduleAlarm(context, alarm.uid, date.getTime(), dates.getNotificationId(date));
++                    Log.d(TAG, "rescheduling alarm: " + alarm.uid);
++                    hasScheduled = true;
++                } else {
++                    Log.d(TAG, "skipping past date for alarm " + alarm.uid + ": " + date.toString());
++                }
++            }
++            // No future dates left — remove alarm entirely so it cannot fire again
++            if (!hasScheduled) {
++                Storage.removeAlarm(context, alarm.uid);
++                Storage.removeDates(context, alarm.uid);
++                Log.d(TAG, "removed alarm with no future dates on boot: " + alarm.uid);
+             }
+         }
+     }
+@@ -114,7 +134,8 @@ public class Manager {
+     static void start(Context context, String alarmUid) {
+         activeAlarmUid = alarmUid;
+         sound = new Sound(context);
+-        sound.play("default");
++        // Play the bundled alarm.wav from res/raw instead of the device default ringtone
++        sound.play("alarm");
+ 
+         Log.d(TAG, "Starting " + activeAlarmUid);
+     }
+@@ -137,8 +158,10 @@ public class Manager {
+                     Storage.saveDates(context, dates);
+                     Helper.scheduleAlarm(context, dates.alarmUid, updated.getTime(), dates.getCurrentNotificationId());
+                 } else {
+-                    alarm.active = false;
+-                    Storage.saveAlarm(context, alarm);
++                    // Fully remove one-shot alarms so they cannot be rescheduled on the
++                    // next device reboot (leaving them as active=false was the root cause
++                    // of ghost alarms firing after restart).
++                    Storage.removeAlarm(context, activeAlarmUid);
+                     Storage.removeDates(context, activeAlarmUid);
+                 }
+             }
+diff --git a/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/receivers/NotificationActionReceiver.java b/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/receivers/NotificationActionReceiver.java
+index e826fba..8986ee6 100644
+--- a/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/receivers/NotificationActionReceiver.java
++++ b/node_modules/expo-alarm-module/android/src/main/java/com/expoalarmmodule/receivers/NotificationActionReceiver.java
+@@ -6,9 +6,8 @@ import android.content.Context;
+ import android.content.Intent;
+ import android.util.Log;
+ 
+-import com.expoalarmmodule.Manager;
+-import com.expoalarmmodule.Helper;
+ import com.expoalarmmodule.AlarmService;
++import com.expoalarmmodule.Manager;
+ 
+ public class NotificationActionReceiver extends BroadcastReceiver {
+ 
+@@ -35,13 +34,15 @@ public class NotificationActionReceiver extends BroadcastReceiver {
+             case "DISMISS_ACTION":
+                 Log.d(TAG, "Received DISMISS action for Alarm: " + alarmUid);
+                 Manager.stop(context);
+-                this.removeNotification(context, notificationId);
++                AlarmService.stopIfRunning(context);
++                cancelNotification(context, notificationId);
+                 break;
+ 
+             case "SNOOZE_ACTION":
+                 Log.d(TAG, "Received SNOOZE action for Alarm: " + alarmUid);
+                 Manager.snooze(context);
+-                this.removeNotification(context, notificationId);
++                AlarmService.stopIfRunning(context);
++                cancelNotification(context, notificationId);
+                 break;
+ 
+             default:
+@@ -50,12 +51,11 @@ public class NotificationActionReceiver extends BroadcastReceiver {
+         }
+     }
+ 
+-    private void removeNotification(Context context, int notificationId) {
+-        Intent serviceIntentSnooze = new Intent(context, AlarmService.class);
+-        context.stopService(serviceIntentSnooze);
++    private void cancelNotification(Context context, int notificationId) {
+         if (notificationId != -1) {
+-            ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE))
+-                .cancel(notificationId);
++            NotificationManager nm = (NotificationManager)
++                context.getSystemService(Context.NOTIFICATION_SERVICE);
++            nm.cancel(notificationId);
+         }
+     }
+ }

@@ -1,0 +1,435 @@
+import { RoleType } from "@prisma/client";
+import { prisma } from "../utils/client";
+import AppError from "../utils/error";
+
+export class CHOGroupService {
+  // ─── Admin: promote CHW → CHO ────────────────────────────────────────────────
+
+  static async promoteToCHO(userId: string, groupName?: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { userRoles: true, student: true },
+    });
+    if (!user) throw new AppError("User not found", 404);
+    if (!user.student) throw new AppError("User has no student record", 404);
+
+    if (user.userRoles.some((r) => r.name === RoleType.CHO))
+      throw new AppError("User is already a CHO", 409);
+
+    const existingGroup = await prisma.cHOGroup.findUnique({
+      where: { choId: user.student.id },
+    });
+    if (existingGroup) throw new AppError("This student already leads a group", 409);
+
+    return prisma.$transaction(async (tx) => {
+      await tx.userRole.create({ data: { userId, name: RoleType.CHO } });
+      await tx.student.update({
+        where: { id: user.student!.id },
+        data: { role: RoleType.CHO },
+      });
+
+      const name = groupName ?? `${user.fullNames}'s Group`;
+      const group = await tx.cHOGroup.create({
+        data: { name, choId: user.student!.id, sector: user.sector },
+        include: {
+          cho: {
+            include: {
+              user: { select: { id: true, fullNames: true, photo: true, phoneNumber: true, district: true, sector: true } },
+            },
+          },
+        },
+      });
+
+      return { user: { id: user.id, fullNames: user.fullNames }, group };
+    });
+  }
+
+  // ─── Admin: demote CHO → CHW, transfer group to new CHO ─────────────────────
+
+  static async demoteToCHW(userId: string, newChoStudentId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { userRoles: true, student: true },
+    });
+    if (!user) throw new AppError("User not found", 404);
+    if (!user.student) throw new AppError("User has no student record", 404);
+
+    if (!user.userRoles.some((r) => r.name === RoleType.CHO))
+      throw new AppError("User is not a CHO", 400);
+
+    if (newChoStudentId === user.student.id)
+      throw new AppError("New CHO cannot be the same as the demoted CHO", 400);
+
+    const group = await prisma.cHOGroup.findUnique({
+      where: { choId: user.student.id },
+    });
+    if (!group) throw new AppError("This CHO does not lead any group", 404);
+
+    const newCHOStudent = await prisma.student.findUnique({
+      where: { id: newChoStudentId },
+      include: { user: { include: { userRoles: true } }, ledGroup: true },
+    });
+    if (!newCHOStudent) throw new AppError("New CHO student not found", 404);
+    if (newCHOStudent.ledGroup)
+      throw new AppError("The selected student already leads another group", 409);
+
+    return prisma.$transaction(async (tx) => {
+      // Transfer group ownership
+      const updatedGroup = await tx.cHOGroup.update({
+        where: { id: group.id },
+        data: { choId: newChoStudentId },
+        include: {
+          cho: {
+            include: {
+              user: { select: { id: true, fullNames: true, photo: true, phoneNumber: true } },
+            },
+          },
+        },
+      });
+
+      // Remove CHO role and revert student role
+      await tx.userRole.deleteMany({ where: { userId, name: RoleType.CHO } });
+      await tx.student.update({
+        where: { id: user.student!.id },
+        data: { role: RoleType.TRAINEE },
+      });
+
+      // Ensure new leader has CHO role
+      const newAlreadyCHO = newCHOStudent.user.userRoles.some((r) => r.name === RoleType.CHO);
+      if (!newAlreadyCHO) {
+        await tx.userRole.create({ data: { userId: newCHOStudent.userId, name: RoleType.CHO } });
+        await tx.student.update({
+          where: { id: newChoStudentId },
+          data: { role: RoleType.CHO },
+        });
+      }
+
+      return {
+        demotedUser: { id: user.id, fullNames: user.fullNames },
+        newCHO: { id: newCHOStudent.user.id, fullNames: newCHOStudent.user.fullNames },
+        group: updatedGroup,
+      };
+    });
+  }
+
+  // ─── Admin: create a group and assign a CHO ──────────────────────────────────
+
+  static async createGroup(data: {
+    name: string;
+    choStudentId: string;
+    sector?: string;
+    description?: string;
+  }) {
+    const cho = await prisma.student.findUnique({
+      where: { id: data.choStudentId },
+      include: { user: { include: { userRoles: true } } },
+    });
+    if (!cho) throw new AppError("CHO student not found", 404);
+
+    const isCHO = cho.user.userRoles.some((r) => r.name === "CHO");
+    if (!isCHO)
+      throw new AppError("The selected student does not have the CHO role", 400);
+
+    const existing = await prisma.cHOGroup.findUnique({ where: { choId: data.choStudentId } });
+    if (existing) throw new AppError("This CHO already leads a group", 409);
+
+    return prisma.cHOGroup.create({
+      data: {
+        name: data.name,
+        choId: data.choStudentId,
+        sector: data.sector,
+        description: data.description,
+      },
+      include: { cho: { include: { user: true } } },
+    });
+  }
+
+  // ─── Admin: list all groups ──────────────────────────────────────────────────
+
+  static async getAllGroups(limit = 20, offset = 0) {
+    const [groups, total] = await Promise.all([
+      prisma.cHOGroup.findMany({
+        skip: offset,
+        take: limit,
+        include: {
+          cho: {
+            include: {
+              user: { select: { id: true, fullNames: true, photo: true, phoneNumber: true } },
+            },
+          },
+          _count: { select: { members: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.cHOGroup.count(),
+    ]);
+    return { groups, total };
+  }
+
+  // ─── Admin: get a specific group by ID ───────────────────────────────────────
+
+  static async getGroupById(groupId: string) {
+    const group = await prisma.cHOGroup.findUnique({
+      where: { id: groupId },
+      include: {
+        cho: {
+          include: {
+            user: { select: { id: true, fullNames: true, photo: true, phoneNumber: true, district: true, sector: true } },
+          },
+        },
+        members: {
+          include: {
+            student: {
+              include: {
+                user: { select: { id: true, fullNames: true, photo: true, phoneNumber: true, district: true, sector: true } },
+              },
+            },
+          },
+        },
+        _count: { select: { members: true } },
+      },
+    });
+    if (!group) throw new AppError("Group not found", 404);
+    return group;
+  }
+
+  // ─── Admin: add a CHW directly to a group ────────────────────────────────────
+
+  static async addMemberByAdmin(groupId: string, studentId: string) {
+    const [group, student] = await Promise.all([
+      prisma.cHOGroup.findUnique({ where: { id: groupId } }),
+      prisma.student.findUnique({
+        where: { id: studentId },
+        include: { groupMembership: true },
+      }),
+    ]);
+
+    if (!group) throw new AppError("Group not found", 404);
+    if (!student) throw new AppError("Student not found", 404);
+    if (student.groupMembership)
+      throw new AppError("Student already belongs to a group", 409);
+    if (group.choId === studentId)
+      throw new AppError("CHO cannot be added as a regular member", 400);
+
+    return prisma.cHOGroupMember.create({
+      data: { groupId, studentId },
+      include: { student: { include: { user: true } } },
+    });
+  }
+
+  // ─── Admin: remove a CHW from a group ────────────────────────────────────────
+
+  static async removeMember(groupId: string, studentId: string) {
+    const member = await prisma.cHOGroupMember.findFirst({
+      where: { groupId, studentId },
+    });
+    if (!member) throw new AppError("Member not found in this group", 404);
+    await prisma.cHOGroupMember.delete({ where: { id: member.id } });
+  }
+
+  // ─── CHO: get own group ───────────────────────────────────────────────────────
+
+  static async getMyGroup(choUserId: string) {
+    const student = await prisma.student.findUnique({ where: { userId: choUserId } });
+    if (!student) throw new AppError("Student record not found", 404);
+
+    const group = await prisma.cHOGroup.findUnique({
+      where: { choId: student.id },
+      include: { _count: { select: { members: true } } },
+    });
+    if (!group) throw new AppError("You do not lead any group yet", 404);
+    return group;
+  }
+
+  // ─── CHO: list own group members ─────────────────────────────────────────────
+
+  static async getMyGroupMembers(choUserId: string) {
+    const student = await prisma.student.findUnique({ where: { userId: choUserId } });
+    if (!student) throw new AppError("Student record not found", 404);
+
+    const group = await prisma.cHOGroup.findUnique({ where: { choId: student.id } });
+    if (!group) throw new AppError("You do not lead any group", 404);
+
+    return prisma.cHOGroupMember.findMany({
+      where: { groupId: group.id },
+      include: {
+        student: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullNames: true,
+                photo: true,
+                phoneNumber: true,
+                district: true,
+                sector: true,
+                cell: true,
+                village: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { joinedAt: "asc" },
+    });
+  }
+
+  // ─── CHO: directly add a CHW to their group (no invitation needed) ───────────
+
+  static async directlyAddMember(choUserId: string, targetStudentId: string) {
+    const cho = await prisma.student.findUnique({ where: { userId: choUserId } });
+    if (!cho) throw new AppError("Student record not found", 404);
+
+    const group = await prisma.cHOGroup.findUnique({ where: { choId: cho.id } });
+    if (!group) throw new AppError("You do not lead any group", 404);
+
+    if (targetStudentId === cho.id)
+      throw new AppError("You cannot add yourself as a member", 400);
+
+    const target = await prisma.student.findUnique({
+      where: { id: targetStudentId },
+      include: { groupMembership: true },
+    });
+    if (!target) throw new AppError("Student not found", 404);
+    if (target.groupMembership)
+      throw new AppError("This student already belongs to a group", 409);
+
+    return prisma.cHOGroupMember.create({
+      data: { groupId: group.id, studentId: targetStudentId },
+      include: {
+        student: {
+          include: {
+            user: {
+              select: { id: true, fullNames: true, photo: true, phoneNumber: true, district: true, sector: true },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  // ─── CHO: remove a member from own group ─────────────────────────────────────
+
+  static async removeMyMember(choUserId: string, targetStudentId: string) {
+    const cho = await prisma.student.findUnique({ where: { userId: choUserId } });
+    if (!cho) throw new AppError("Student record not found", 404);
+
+    const group = await prisma.cHOGroup.findUnique({ where: { choId: cho.id } });
+    if (!group) throw new AppError("You do not lead any group", 404);
+
+    const member = await prisma.cHOGroupMember.findFirst({
+      where: { groupId: group.id, studentId: targetStudentId },
+    });
+    if (!member) throw new AppError("Member not found in your group", 404);
+
+    await prisma.cHOGroupMember.delete({ where: { id: member.id } });
+  }
+
+  // ─── CHO: search CHW candidates in same area (max 10) ────────────────────────
+
+  static async searchCHWCandidates(choUserId: string, search?: string) {
+    const choStudent = await prisma.student.findUnique({
+      where: { userId: choUserId },
+      include: { user: { select: { district: true, sector: true } } },
+    });
+    if (!choStudent) throw new AppError("Student record not found", 404);
+
+    const group = await prisma.cHOGroup.findUnique({ where: { choId: choStudent.id } });
+    if (!group) throw new AppError("You do not lead any group", 404);
+
+    const userWhere: any = {
+      userRoles: { some: { name: RoleType.TRAINEE } },
+    };
+    if (choStudent.user.district) {
+      userWhere.district = choStudent.user.district;
+    }
+    if (search) {
+      userWhere.OR = [
+        { fullNames: { contains: search, mode: "insensitive" } },
+        { phoneNumber: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    const students = await prisma.student.findMany({
+      where: {
+        id: { not: choStudent.id },
+        groupMembership: null,
+        user: userWhere,
+      },
+      take: 10,
+      include: {
+        user: {
+          select: { id: true, fullNames: true, photo: true, phoneNumber: true, district: true, sector: true },
+        },
+      },
+      orderBy: { user: { fullNames: "asc" } },
+    });
+
+    return students.map((s) => ({
+      id: s.id,
+      userId: s.userId,
+      status: s.status,
+      user: s.user,
+    }));
+  }
+
+  // ─── CHO: monitoring — progress & scores of all members ──────────────────────
+
+  static async getGroupMonitoring(choUserId: string) {
+    const cho = await prisma.student.findUnique({ where: { userId: choUserId } });
+    if (!cho) throw new AppError("Student record not found", 404);
+
+    const group = await prisma.cHOGroup.findUnique({ where: { choId: cho.id } });
+    if (!group) throw new AppError("You do not lead any group", 404);
+
+    const members = await prisma.cHOGroupMember.findMany({
+      where: { groupId: group.id },
+      include: {
+        student: {
+          include: {
+            user: { select: { id: true, fullNames: true, photo: true, phoneNumber: true } },
+            courseProgresses: {
+              include: { course: { select: { id: true, title: true } } },
+              orderBy: { updatedAt: "desc" },
+            },
+            attempts: {
+              where: { isCompleted: true },
+              orderBy: { updatedAt: "desc" },
+              take: 10,
+              select: {
+                id: true,
+                marks: true,
+                isCompleted: true,
+                tryCount: true,
+                updatedAt: true,
+                preTestId: true,
+                midTestId: true,
+                finalTestId: true,
+                finalExamId: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return {
+      groupId: group.id,
+      groupName: group.name,
+      totalMembers: members.length,
+      members: members.map((m) => ({
+        studentId: m.studentId,
+        user: m.student.user,
+        status: m.student.status,
+        joinedGroupAt: m.joinedAt,
+        courseProgress: m.student.courseProgresses.map((cp) => ({
+          courseId: cp.courseId,
+          courseTitle: cp.course.title,
+          progress: cp.progress,
+          isCompleted: cp.isCompleted,
+        })),
+        recentTestAttempts: m.student.attempts,
+      })),
+    };
+  }
+}

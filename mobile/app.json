@@ -1,0 +1,149 @@
+{
+  "expo": {
+    "name": "eBumenyi",
+    "slug": "chw-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/logo/chw.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/logo/chw.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "scheme": "chwapp",
+    "primaryColor": "#3363AD",
+    "deepLinks": [
+      "chwapp://meeting",
+      "https://meeting.ebumenyi.online/meeting/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gilberthappi.chwapp",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to capture photos for patient records",
+        "NSLocationWhenInUseUsageDescription": "This app uses location to track community health visits",
+        "UIBackgroundModes": [
+          "audio",
+          "processing"
+        ],
+        "NSUserNotificationAlertStyle": "alert"
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo/chw.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.gilberthappi.chwapp",
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 1,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "*.ebumenyi.online",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "chwapp"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.USE_EXACT_ALARM",
+        "android.permission.VIBRATE",
+        "android.permission.WAKE_LOCK",
+        "android.permission.USE_FULL_SCREEN_INTENT",
+        "android.permission.DISABLE_KEYGUARD",
+        "android.permission.TURN_SCREEN_ON",
+        "android.permission.FOREGROUND_SERVICE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/logo/chw.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font",
+      "expo-localization",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow eBumenyi to access your camera"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow eBumenyi to use your location for tracking health visits"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/logo/chw.png",
+          "color": "#3363AD",
+          "sounds": [
+            "./assets/sounds/alarm.wav"
+          ],
+          "mode": "production"
+        }
+      ],
+      "expo-audio",
+      "expo-router",
+      "expo-video",
+      "expo-web-browser",
+      [
+        "expo-alarm-module",
+        {
+          "alarmPermission": true,
+          "scheduleExactAlarmPermission": true,
+          "wakeUpPermission": true,
+          "fullScreenIntentPermission": true,
+          "androidAlarmPermission": true
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ],
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/695ed06b-8e35-4885-8284-179930c88ef4",
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD",
+      "enabled": true
+    },
+    "extra": {
+      "apiUrl": "https://api.yourbackend.com",
+      "environment": "production",
+      "router": {},
+      "eas": {
+        "projectId": "695ed06b-8e35-4885-8284-179930c88ef4"
+      }
+    },
+    "owner": "isangepro"
+  }
+}

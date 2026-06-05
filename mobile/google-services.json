@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "371691500641",
+    "project_id": "ebumenyi",
+    "storage_bucket": "ebumenyi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:371691500641:android:36f564e317f375f0be2620",
+        "android_client_info": {
+          "package_name": "com.gilberthappi.chwapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCx5qBFC7QzTxbvUnInpR0iQCrbYTQ51fM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
